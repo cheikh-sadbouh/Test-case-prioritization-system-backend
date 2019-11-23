@@ -1,0 +1,9 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+testing,my.upm.emma.testing,UploadController,288,0,10,0,59,0,10,0,5,0
+testing,my.upm.emma.testing,StorageService,119,0,6,0,27,0,8,0,5,0
+testing,my.upm.emma.testing,UploadController.new Runnable() {...},13,0,0,0,4,0,2,0,2,0
+testing,my.upm.emma.testing,TestingApplication,9,0,0,0,4,0,3,0,3,0
+testing,my.upm.emma.testing,Options,3,0,0,0,1,0,1,0,1,0
+testing,my.upm.emma.testing,GetResult,25,0,0,0,5,0,3,0,3,0
+testing,com.emma.upm,Circle,6,16,2,2,2,5,3,2,1,2
+testing,user.uploaded.code,sdds,3,0,0,0,1,0,1,0,1,0
