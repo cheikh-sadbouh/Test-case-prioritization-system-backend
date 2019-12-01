@@ -1,10 +1,10 @@
 package my.upm.emma.testing;
 
-public class Options {
+public class User {
     boolean line;
     boolean branch;
-    boolean  instruction;
+    boolean instruction;
     boolean method;
 
-
 }
+

@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UploadController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">testing</a> &gt; <a href="index.source.html" class="el_package">my.upm.emma.testing</a> &gt; <span class="el_source">UploadController.java</span></div><h1>UploadController.java</h1><pre class="source lang-java linenums">package my.upm.emma.testing;
 
+
 import java.io.*;
 
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
@@ -20,14 +32,20 @@ import org.w3c.dom.Element;
 
 
 @Controller
-<span class="nc" id="L23">public class UploadController {</span>
+<span class="nc" id="L35">public class UploadController {</span>
 
+    JSONObject object ;
+    JSONArray keys ;
     @Autowired
     StorageService storageService;
+    @Resource
+    DaoInter doaObj;
+<span class="nc" id="L43">    String [] Options = {&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;};</span>
+<span class="nc" id="L44">    List&lt;String&gt; files = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L45">   List&lt;String&gt; returnobject = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L46">   HashMap&lt;String,ArrayList&lt;String&gt;&gt;  data = new HashMap&lt;&gt;();</span>
 
-<span class="nc" id="L28">    List&lt;String&gt; files = new ArrayList&lt;String&gt;();</span>
-
-
+   String [] testingOptions;
     @RequestMapping(
             value = (&quot;/post&quot;),
             headers = &quot;content-type=multipart/form-data&quot;,
@@ -35,127 +53,201 @@ import org.w3c.dom.Element;
     @CrossOrigin(origins = &quot;http://localhost:4200&quot;, allowedHeaders = &quot;*&quot;)
     @ResponseBody
     public ResponseEntity&lt;?&gt; handleFileUpload(@RequestParam(&quot;file&quot;) MultipartFile file) {
-<span class="nc" id="L38">        String message = &quot;&quot;;</span>
+<span class="nc" id="L56">        String message = &quot;&quot;;</span>
         try {
-<span class="nc" id="L40">            storageService.store(file);</span>
-<span class="nc" id="L41">            files.add(file.getOriginalFilename());</span>
+<span class="nc" id="L58">            storageService.store(file);</span>
+<span class="nc" id="L59">            files.add(file.getOriginalFilename());</span>
+<span class="nc" id="L60">            returnobject.add(file.getOriginalFilename());</span>
 
-<span class="nc" id="L43">            message = &quot;You successfully uploaded &quot; + file.getOriginalFilename() + &quot;!&quot;;</span>
-<span class="nc" id="L44">            return ResponseEntity.status(HttpStatus.OK).body(message);</span>
-<span class="nc" id="L45">        } catch (Exception e) {</span>
-<span class="nc" id="L46">            message = &quot;FAIL to upload &quot; + file.getOriginalFilename() + &quot;!&quot;;</span>
-<span class="nc" id="L47">            System.out.println(ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message));</span>
-<span class="nc" id="L48">            System.out.println(e.getStackTrace());</span>
-<span class="nc" id="L49">            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);</span>
+<span class="nc" id="L62">            message = &quot;You successfully uploaded &quot; + file.getOriginalFilename() + &quot;!&quot;;</span>
+<span class="nc" id="L63">            return ResponseEntity.status(HttpStatus.OK).body(message);</span>
+<span class="nc" id="L64">        } catch (Exception e) {</span>
+<span class="nc" id="L65">            message = &quot;FAIL to upload &quot; + file.getOriginalFilename() + &quot;!&quot;;</span>
+<span class="nc" id="L66">            System.out.println(ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message));</span>
+<span class="nc" id="L67">            System.out.println(e.getStackTrace());</span>
+<span class="nc" id="L68">            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);</span>
         }
     }
 
-    @RequestMapping(value = &quot;/getoption&quot;, method = RequestMethod.POST, headers = &quot;Accept=application/json&quot;)
-
+    @PostMapping(value = &quot;/getoption&quot;)
     @CrossOrigin(origins = &quot;http://localhost:4200&quot;, allowedHeaders = &quot;*&quot;)
     @ResponseBody
-    public ResponseEntity&lt;String&gt; getOptions(@RequestBody Map&lt;String, String&gt; payload){
-<span class="nc" id="L58">        String message = &quot;ok&quot;;</span>
+    public ResponseEntity&lt;String&gt; getOptions(@RequestBody  Object payload){
+
+<span class="nc" id="L77">        String message = &quot;ok&quot;;</span>
         try {
+<span class="nc" id="L79">            ObjectMapper oMapper = new ObjectMapper();</span>
 
-<span class="nc" id="L61">         System.out.println(payload.get(&quot;method&quot;));</span>
-<span class="nc" id="L62">         System.out.println(payload.get(&quot;line&quot;));</span>
-<span class="nc" id="L63">         System.out.println(payload.get(&quot;insturction&quot;));</span>
-<span class="nc" id="L64">         System.out.println(payload.get(&quot;branch&quot;));</span>
+            try {
+<span class="nc" id="L82">                String json = oMapper.writeValueAsString(payload);</span>
 
-<span class="nc" id="L66">            new Thread(new Runnable() {</span>
+<span class="nc" id="L84">                System.out.println(json);   // compact-print</span>
+
+<span class="nc" id="L86">                object = new JSONObject(json.trim());</span>
+<span class="nc" id="L87">                 keys = object.names ();</span>
+
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                for (int i = 0; i &lt; keys.length (); ++i) {</span>
+
+<span class="nc" id="L91">                    String key = keys.getString (i); // Here's your key</span>
+<span class="nc" id="L92">                    String value = object.getString (key); // Here's your value</span>
+
+                }
+<span class="nc" id="L95">            } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L96">                e.printStackTrace();</span>
+<span class="nc" id="L97">            }</span>
+
+
+
+
+
+
+
+
+<span class="nc" id="L106">            new Thread(new Runnable() {</span>
                 @Override
                 public void run() {
                     // code goes here.
-<span class="nc" id="L70">                   runTest();</span>
-<span class="nc" id="L71">                    readXml();</span>
-                    //GetResult.status=&quot;complete&quot;;
-<span class="nc" id="L73">                }</span>
-<span class="nc" id="L74">            }).start();</span>
+<span class="nc" id="L110">                  runTest();</span>
+<span class="nc" id="L111">                    readXml();</span>
+<span class="nc" id="L112">                }</span>
+<span class="nc" id="L113">            }).start();</span>
 
-<span class="nc" id="L76">            return ResponseEntity.status(HttpStatus.OK).body(message);</span>
+<span class="nc" id="L115">            return ResponseEntity.status(HttpStatus.OK).body(message);</span>
 
-<span class="nc" id="L78">        } catch (Exception e) {</span>
-<span class="nc" id="L79">            message = &quot;FAIL to get options&quot;;</span>
-<span class="nc" id="L80">            System.out.println(ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message));</span>
-<span class="nc" id="L81">            System.out.println(e.getStackTrace());</span>
-<span class="nc" id="L82">            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);</span>
+<span class="nc" id="L117">        } catch (Exception e) {</span>
+<span class="nc" id="L118">            message = &quot;FAIL to get options&quot;;</span>
+<span class="nc" id="L119">            System.out.println(ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message));</span>
+<span class="nc" id="L120">            System.out.println(e.getStackTrace());</span>
+<span class="nc" id="L121">            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);</span>
         }
     }
 
 public   void runTest(){
-<span class="nc" id="L87">    ProcessBuilder processBuilder = new ProcessBuilder();</span>
+<span class="nc" id="L126">    ProcessBuilder processBuilder = new ProcessBuilder();</span>
 
-<span class="nc" id="L89">    processBuilder.command(&quot;bash&quot;, &quot;-c&quot;, &quot;ls /home/cheikh/IdeaProjects/testing | mvn clean test&quot;);</span>
+<span class="nc" id="L128">    processBuilder.command(&quot;bash&quot;, &quot;-c&quot;, &quot;ls /home/cheikh/IdeaProjects/testing | mvn clean test&quot;);</span>
 
 
     try {
 
-<span class="nc" id="L94">        Process process = processBuilder.start();</span>
+<span class="nc" id="L133">        Process process = processBuilder.start();</span>
 
-<span class="nc" id="L96">        BufferedReader reader =</span>
-<span class="nc" id="L97">                new BufferedReader(new InputStreamReader(process.getInputStream()));</span>
+<span class="nc" id="L135">        BufferedReader reader =</span>
+<span class="nc" id="L136">                new BufferedReader(new InputStreamReader(process.getInputStream()));</span>
 
         String line;
-<span class="nc bnc" id="L100" title="All 2 branches missed.">        while ((line = reader.readLine()) != null) {</span>
-<span class="nc" id="L101">            System.out.println(line);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L140">            System.out.println(line);</span>
         }
 
-<span class="nc" id="L104">        int exitCode = process.waitFor();</span>
-<span class="nc" id="L105">        System.out.println(&quot;\nExited with error code : &quot; + exitCode);</span>
+<span class="nc" id="L143">        int exitCode = process.waitFor();</span>
+<span class="nc" id="L144">        System.out.println(&quot;\nExited with error code : &quot; + exitCode);</span>
 
-<span class="nc" id="L107">    } catch (IOException e) {</span>
-<span class="nc" id="L108">        e.printStackTrace();</span>
-<span class="nc" id="L109">    } catch (InterruptedException e) {</span>
-<span class="nc" id="L110">        e.printStackTrace();</span>
-<span class="nc" id="L111">    }</span>
+<span class="nc" id="L146">    } catch (IOException e) {</span>
+<span class="nc" id="L147">        e.printStackTrace();</span>
+<span class="nc" id="L148">    } catch (InterruptedException e) {</span>
+<span class="nc" id="L149">        e.printStackTrace();</span>
+<span class="nc" id="L150">    }</span>
 
 
-<span class="nc" id="L114">}</span>
+<span class="nc" id="L153">}</span>
 
-public void readXml(){
-    try
-    {
+    public void readXml(){
+        try
+        {
 //creating a constructor of file class and parsing an XML file
 
-<span class="nc" id="L121">        File file = new File(getClass().getClassLoader().getResource(&quot;report/jacoco.xml&quot;).getFile());</span>
+<span class="nc" id="L160">            File file = new File(getClass().getClassLoader().getResource(&quot;report/jacoco.xml&quot;).getFile());</span>
 //an instance of factory that gives a document builder
-<span class="nc" id="L123">        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span>
+<span class="nc" id="L162">            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span>
 //an instance of builder to parse the specified xml file
-<span class="nc" id="L125">        dbf.setValidating(false);</span>
-<span class="nc" id="L126">        dbf.setFeature(&quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;, false);</span>
-<span class="nc" id="L127">        DocumentBuilder db = dbf.newDocumentBuilder();</span>
-<span class="nc" id="L128">        Document doc = db.parse(file);</span>
-<span class="nc" id="L129">        doc.getDocumentElement().normalize();</span>
-<span class="nc" id="L130">        System.out.println(&quot;Root element: &quot; + doc.getDocumentElement().getNodeName());</span>
-<span class="nc" id="L131">        NodeList nodeList = doc.getElementsByTagName(&quot;class&quot;);</span>
+<span class="nc" id="L164">            dbf.setValidating(false);</span>
+<span class="nc" id="L165">            dbf.setFeature(&quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;, false);</span>
+<span class="nc" id="L166">            DocumentBuilder db = dbf.newDocumentBuilder();</span>
+<span class="nc" id="L167">            Document doc = db.parse(file);</span>
+<span class="nc" id="L168">            doc.getDocumentElement().normalize();</span>
+<span class="nc" id="L169">            System.out.println(&quot;Root element: &quot; + doc.getDocumentElement().getNodeName());</span>
+<span class="nc" id="L170">            NodeList nodeList = doc.getElementsByTagName(&quot;class&quot;);</span>
+
 // nodeList is not iterable, so we are using for loop
-<span class="nc bnc" id="L133" title="All 2 branches missed.">        for (int itr = 0; itr &lt; nodeList.getLength(); itr++)</span>
-        {
-<span class="nc" id="L135">            Node node = nodeList.item(itr);</span>
-<span class="nc" id="L136">            System.out.println(&quot;\nNode Name :&quot; + node.getNodeName());</span>
-
-<span class="nc bnc" id="L138" title="All 2 branches missed.">            if (node.getNodeType() == Node.ELEMENT_NODE )</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">            for (int itr = 0; itr &lt; nodeList.getLength(); itr++)</span>
             {
-<span class="nc" id="L140">                System.out.println(&quot;inside getnodetype&quot;);</span>
-<span class="nc bnc" id="L141" title="All 2 branches missed.">                if(node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).equals(&quot;TestCircle&quot;)){</span>
-<span class="nc" id="L142">                    Element eElement = (Element) node;</span>
-<span class="nc bnc" id="L143" title="All 2 branches missed.">                    if(eElement.getChildNodes().item(9).getNodeName().equals(&quot;counter&quot;)){</span>
+<span class="nc" id="L175">                Node node = nodeList.item(itr);</span>
+<span class="nc" id="L176">                System.out.println(&quot;\nNode Name :&quot; + node.getNodeName());</span>
 
-<span class="nc" id="L145">                        System.out.println(&quot;counter : &quot;+ eElement.getChildNodes().item(9).getAttributes().getNamedItem(&quot;INSTRUCTION&quot;));</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">                if (node.getNodeType() == Node.ELEMENT_NODE )</span>
+                {
+<span class="nc" id="L180">                    System.out.println(&quot;node attr name :&quot;+node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue());</span>
+
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                    for (int s =0 ; s &lt; returnobject.size() ; s++) {</span>
+<span class="nc" id="L183">                        System.out.println(&quot;class anme :&quot;+returnobject.get(s).toString());</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">                        if (node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue().equals(returnobject.get(s).toString())) {</span>
+<span class="nc" id="L185">                            Element eElement = (Element) node;</span>
+<span class="nc" id="L186">                            System.out.println(&quot;class found &quot;);</span>
+<span class="nc" id="L187">                            NodeList ChildNodes = eElement.getChildNodes();</span>
+<span class="nc" id="L188">                            ArrayList&lt;String&gt; opt = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L189">                            String currentFilename =&quot;&quot;;</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                            for (int ii = 0; ii &lt; ChildNodes.getLength(); ii++) {</span>
+<span class="nc" id="L191">                                Node nodes = ChildNodes.item(ii);</span>
+<span class="nc bnc" id="L192" title="All 4 branches missed.">                                if (nodes.getNodeType() == nodes.ELEMENT_NODE &amp;&amp; Objects.equals(&quot;counter&quot;, nodes.getNodeName())) {</span>
+<span class="nc" id="L193">                                    System.out.println(&quot;inside counter   &quot;);</span>
+
+<span class="nc" id="L195">                                     keys = object.names ();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">                                    for (int c = 0; c &lt; keys.length(); ++c) {</span>
+<span class="nc" id="L197">                                        System.out.println(&quot;insde keys  &quot;);</span>
+<span class="nc" id="L198">                                        String key = keys.getString(c); // Here's your key</span>
+<span class="nc" id="L199">                                        String value = object.getString(key); // Here's your value</span>
+<span class="nc" id="L200">                                        System.out.println(&quot;key&quot;+key);</span>
+<span class="nc" id="L201">                                        System.out.println(&quot;value&quot;+value);</span>
+
+<span class="nc bnc" id="L203" title="All 4 branches missed.">                                        if (nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue().equals(key.toUpperCase()) &amp;&amp; value.equals(&quot;true&quot;)) {</span>
+<span class="nc" id="L204">                                          String fileName = node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue();</span>
+<span class="nc" id="L205">                                            System.out.println(&quot;file name &quot; +fileName);</span>
+
+
+<span class="nc" id="L208">                                           String  testingOption = nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue();</span>
+<span class="nc" id="L209">                                            System.out.println(&quot;testing option &quot; + testingOption);</span>
+<span class="nc" id="L210">                                            String  coverd = nodes.getAttributes().getNamedItem(&quot;covered&quot;).getNodeValue();</span>
+<span class="nc" id="L211">                                            System.out.println(&quot;coverd for &quot;+ testingOption +&quot;  option is :&quot;+coverd);</span>
+                                           // opt.add(fileName);
+<span class="nc" id="L213">                                            currentFilename = fileName;</span>
+<span class="nc" id="L214">                                            opt.add(coverd);</span>
+                                        //  responsEntity re=  Config.getbean();
+                                          //re.setFileName(fileName);
+                                          //re.setTestingOption(testingOption);
+                                         //   doaObj.save(re);
+
+
+                                        }
+
+                                    }
+
+
+                                }
+                            }
+<span class="nc" id="L228">                            System.out.println(&quot;data size&quot;+data.size());</span>
+<span class="nc" id="L229">                            data.put(currentFilename,opt);</span>
+                            //data.put(node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue(),nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue());
+<span class="nc" id="L231">                            System.out.println(&quot;data size afert &quot;+data.size());</span>
+                        }
+
 
                     }
+
+
+
+
                 }
-
-
             }
-        }
-    }
-<span class="nc" id="L154">    catch (Exception e)</span>
-    {
-<span class="nc" id="L156">        e.printStackTrace();</span>
+<span class="nc" id="L242">System.out.println(&quot;data :&quot;);</span>
+<span class="nc" id="L243">System.out.println(data);</span>
 
-<span class="nc" id="L158">    }</span>
-<span class="nc" id="L159">}</span>
+        }
+<span class="nc" id="L246">        catch (Exception e)</span>
+        {
+<span class="nc" id="L248">            e.printStackTrace();</span>
+
+<span class="nc" id="L250">        }</span>
+<span class="nc" id="L251">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -20,8 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class StorageService {
 
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
-    private final Path rootLocation = Paths.get("/home/cheikh/IdeaProjects/testing/src/main/java/my/upm/emma/testing");
-    private final Path testingLoacation = Paths.get("/home/cheikh/IdeaProjects/testing/src/test/java/my/upm/emma/testing");
+    private final Path rootLocation = Paths.get("/home/cheikh/IdeaProjects/testing/src/main/java/user/uploaded/code/");
+    private final Path testingLoacation = Paths.get("/home/cheikh/IdeaProjects/testing/src/test/java/user/uploaded/code");
 
     public StorageService() throws URISyntaxException {
     }
@@ -50,6 +50,7 @@ public class StorageService {
             } else {
                 throw new RuntimeException("FAIL!");
             }
+
         } catch (MalformedURLException e) {
             throw new RuntimeException("FAIL!");
         }
@@ -57,11 +58,13 @@ public class StorageService {
 
     public void deleteAll() {
         FileSystemUtils.deleteRecursively(rootLocation.toFile());
+        FileSystemUtils.deleteRecursively(testingLoacation.toFile());
     }
 
     public void init() {
         try {
             Files.createDirectory(rootLocation);
+            Files.createDirectory(testingLoacation);
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize storage!");
         }
