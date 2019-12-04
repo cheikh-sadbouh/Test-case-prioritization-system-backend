@@ -6,33 +6,27 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import javax.annotation.Resource;
 
 @SpringBootApplication(scanBasePackages = &quot;my.upm.emma.testing&quot;)
-@EnableJpaRepositories(basePackages = &quot;my.upm.emma.testing&quot;)
-<span class="nc" id="L15">public class TestingApplication  implements CommandLineRunner {</span>
+<span class="nc" id="L13">public class TestingApplication  implements CommandLineRunner {</span>
 @Resource
 StorageService storageService;
-@Resource
-DaoInter doaObj;
-    public static void main(String[] args) {
-<span class="nc" id="L21">        SpringApplication.run(TestingApplication.class, args);</span>
 
-<span class="nc" id="L23">    }</span>
+    public static void main(String[] args) {
+<span class="nc" id="L18">        SpringApplication.run(TestingApplication.class, args);</span>
+
+<span class="nc" id="L20">    }</span>
     @Override
     public void run(String... arg) throws Exception {
-<span class="nc" id="L26">       storageService.deleteAll();</span>
-<span class="nc" id="L27">        storageService.init();</span>
-<span class="nc" id="L28">        doaObj.deleteAll();</span>
-<span class="nc" id="L29">        doaObj.save(new responsEntity(&quot;dd&quot;,&quot;dsdsd&quot;));</span>
-<span class="nc" id="L30">    }</span>
+<span class="nc" id="L23">       storageService.deleteAll();</span>
+<span class="nc" id="L24">        storageService.init();</span>
+
+<span class="nc" id="L26">    }</span>
 
 
-    public  void saveit(String filename, String testingOption){
-<span class="nc" id="L34">        doaObj.save(new responsEntity(filename,testingOption));</span>
-<span class="nc" id="L35">    }</span>
+
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -32,18 +33,17 @@ import org.w3c.dom.Element;
 
 
 @Controller
-<span class="nc" id="L35">public class UploadController {</span>
-
+<span class="nc" id="L36">public class UploadController {</span>
+<span class="nc" id="L37">    String testStatus = &quot;inprocess&quot;;</span>
     JSONObject object ;
     JSONArray keys ;
     @Autowired
     StorageService storageService;
-    @Resource
-    DaoInter doaObj;
+
 <span class="nc" id="L43">    String [] Options = {&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;};</span>
 <span class="nc" id="L44">    List&lt;String&gt; files = new ArrayList&lt;String&gt;();</span>
 <span class="nc" id="L45">   List&lt;String&gt; returnobject = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L46">   HashMap&lt;String,ArrayList&lt;String&gt;&gt;  data = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L46">   static HashMap&lt;String,HashMap&lt;String,String&gt;&gt;  data = new HashMap&lt;&gt;();</span>
 
    String [] testingOptions;
     @RequestMapping(
@@ -69,153 +69,180 @@ import org.w3c.dom.Element;
         }
     }
 
+    @GetMapping(value = &quot;/getstatus&quot;)
+    @CrossOrigin(origins = &quot;http://localhost:4200&quot;, allowedHeaders = &quot;*&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;?&gt; getTestStatus() throws InterruptedException, IOException {
+      //  JSONObject json = new JSONObject(data);
+       // System.out.printf( &quot;JSON: &quot;+json);
+<span class="nc" id="L78">        ObjectMapper objectMapper = new ObjectMapper();</span>
+
+<span class="nc" id="L80">        File file = new File(&quot;/home/cheikh/IdeaProjects/testing/src/main/java/my/upm/emma/testing/package.json&quot;);</span>
+
+<span class="nc" id="L82">        HashMap&lt;String,HashMap&lt;String,String&gt;&gt; returneddata = objectMapper.readValue(file, HashMap.class);</span>
+<span class="nc" id="L83">        System.out.println(&quot;data size&quot;+data.size());</span>
+<span class="nc" id="L84">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="nc" id="L85">        headers.add(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (Map.Entry&lt;String, HashMap&lt;String, String&gt;&gt; entry : returneddata.entrySet()) {</span>
+<span class="nc" id="L87">            System.out.println(&quot;Key = &quot; + entry.getKey() + &quot;, Value = &quot; + entry.getValue());</span>
+<span class="nc" id="L88">        }</span>
+<span class="nc" id="L89">         return  new ResponseEntity&lt;&gt;(returneddata ,headers, HttpStatus.OK);</span>
+
+
+    }
+
+    @GetMapping(value = &quot;/test&quot;)
+    @CrossOrigin(origins = &quot;http://localhost:4200&quot;, allowedHeaders = &quot;*&quot;)
+    @ResponseBody
+    public ResponseEntity&lt;?&gt; test() throws InterruptedException {
+
+<span class="nc" id="L99">        return ResponseEntity.status(HttpStatus.OK).body(data);</span>
+    }
+
     @PostMapping(value = &quot;/getoption&quot;)
     @CrossOrigin(origins = &quot;http://localhost:4200&quot;, allowedHeaders = &quot;*&quot;)
     @ResponseBody
     public ResponseEntity&lt;String&gt; getOptions(@RequestBody  Object payload){
 
-<span class="nc" id="L77">        String message = &quot;ok&quot;;</span>
+<span class="nc" id="L107">        String message = &quot;ok&quot;;</span>
         try {
-<span class="nc" id="L79">            ObjectMapper oMapper = new ObjectMapper();</span>
+<span class="nc" id="L109">            ObjectMapper oMapper = new ObjectMapper();</span>
 
             try {
-<span class="nc" id="L82">                String json = oMapper.writeValueAsString(payload);</span>
+<span class="nc" id="L112">                String json = oMapper.writeValueAsString(payload);</span>
 
-<span class="nc" id="L84">                System.out.println(json);   // compact-print</span>
+<span class="nc" id="L114">                System.out.println(json);   // compact-print</span>
 
-<span class="nc" id="L86">                object = new JSONObject(json.trim());</span>
-<span class="nc" id="L87">                 keys = object.names ();</span>
+<span class="nc" id="L116">                object = new JSONObject(json.trim());</span>
+<span class="nc" id="L117">                 keys = object.names ();</span>
 
-<span class="nc bnc" id="L89" title="All 2 branches missed.">                for (int i = 0; i &lt; keys.length (); ++i) {</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">                for (int i = 0; i &lt; keys.length (); ++i) {</span>
 
-<span class="nc" id="L91">                    String key = keys.getString (i); // Here's your key</span>
-<span class="nc" id="L92">                    String value = object.getString (key); // Here's your value</span>
+<span class="nc" id="L121">                    String key = keys.getString (i); // Here's your key</span>
+<span class="nc" id="L122">                    String value = object.getString (key); // Here's your value</span>
 
                 }
-<span class="nc" id="L95">            } catch (JsonProcessingException e) {</span>
-<span class="nc" id="L96">                e.printStackTrace();</span>
-<span class="nc" id="L97">            }</span>
+<span class="nc" id="L125">            } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L126">                e.printStackTrace();</span>
+<span class="nc" id="L127">            }</span>
 
 
-
-
-
-
-
-
-<span class="nc" id="L106">            new Thread(new Runnable() {</span>
+<span class="nc" id="L130">            new Thread(new Runnable() {</span>
                 @Override
                 public void run() {
                     // code goes here.
-<span class="nc" id="L110">                  runTest();</span>
-<span class="nc" id="L111">                    readXml();</span>
-<span class="nc" id="L112">                }</span>
-<span class="nc" id="L113">            }).start();</span>
+<span class="nc" id="L134">                    runTest();</span>
+<span class="nc" id="L135">                    readXml();</span>
+<span class="nc" id="L136">                }</span>
+<span class="nc" id="L137">            }).start();</span>
 
-<span class="nc" id="L115">            return ResponseEntity.status(HttpStatus.OK).body(message);</span>
 
-<span class="nc" id="L117">        } catch (Exception e) {</span>
-<span class="nc" id="L118">            message = &quot;FAIL to get options&quot;;</span>
-<span class="nc" id="L119">            System.out.println(ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message));</span>
-<span class="nc" id="L120">            System.out.println(e.getStackTrace());</span>
-<span class="nc" id="L121">            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);</span>
+
+
+
+
+<span class="nc" id="L144">            return ResponseEntity.status(HttpStatus.OK).body(message);</span>
+
+<span class="nc" id="L146">        } catch (Exception e) {</span>
+<span class="nc" id="L147">            message = &quot;FAIL to get options&quot;;</span>
+<span class="nc" id="L148">            System.out.println(ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message));</span>
+<span class="nc" id="L149">            System.out.println(e.getStackTrace());</span>
+<span class="nc" id="L150">            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);</span>
         }
     }
 
-public   void runTest(){
-<span class="nc" id="L126">    ProcessBuilder processBuilder = new ProcessBuilder();</span>
+public   String runTest(){
+<span class="nc" id="L155">    ProcessBuilder processBuilder = new ProcessBuilder();</span>
 
-<span class="nc" id="L128">    processBuilder.command(&quot;bash&quot;, &quot;-c&quot;, &quot;ls /home/cheikh/IdeaProjects/testing | mvn clean test&quot;);</span>
+<span class="nc" id="L157">    processBuilder.command(&quot;bash&quot;, &quot;-c&quot;, &quot;ls /home/cheikh/IdeaProjects/testing | mvn clean test&quot;);</span>
 
 
     try {
 
-<span class="nc" id="L133">        Process process = processBuilder.start();</span>
+<span class="nc" id="L162">        Process process = processBuilder.start();</span>
 
-<span class="nc" id="L135">        BufferedReader reader =</span>
-<span class="nc" id="L136">                new BufferedReader(new InputStreamReader(process.getInputStream()));</span>
+<span class="nc" id="L164">        BufferedReader reader =</span>
+<span class="nc" id="L165">                new BufferedReader(new InputStreamReader(process.getInputStream()));</span>
 
         String line;
-<span class="nc bnc" id="L139" title="All 2 branches missed.">        while ((line = reader.readLine()) != null) {</span>
-<span class="nc" id="L140">            System.out.println(line);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L169">            System.out.println(line);</span>
         }
 
-<span class="nc" id="L143">        int exitCode = process.waitFor();</span>
-<span class="nc" id="L144">        System.out.println(&quot;\nExited with error code : &quot; + exitCode);</span>
+<span class="nc" id="L172">        int exitCode = process.waitFor();</span>
+<span class="nc" id="L173">        System.out.println(&quot;\nExited with error code : &quot; + exitCode);</span>
 
-<span class="nc" id="L146">    } catch (IOException e) {</span>
-<span class="nc" id="L147">        e.printStackTrace();</span>
-<span class="nc" id="L148">    } catch (InterruptedException e) {</span>
-<span class="nc" id="L149">        e.printStackTrace();</span>
-<span class="nc" id="L150">    }</span>
+<span class="nc" id="L175">    } catch (IOException e) {</span>
+<span class="nc" id="L176">        e.printStackTrace();</span>
+<span class="nc" id="L177">    } catch (InterruptedException e) {</span>
+<span class="nc" id="L178">        e.printStackTrace();</span>
+<span class="nc" id="L179">    }</span>
 
 
-<span class="nc" id="L153">}</span>
+<span class="nc" id="L182">    return &quot;done&quot;;</span>
+}
 
     public void readXml(){
         try
         {
 //creating a constructor of file class and parsing an XML file
 
-<span class="nc" id="L160">            File file = new File(getClass().getClassLoader().getResource(&quot;report/jacoco.xml&quot;).getFile());</span>
+<span class="nc" id="L190">            File file = new File(getClass().getClassLoader().getResource(&quot;report/jacoco.xml&quot;).getFile());</span>
 //an instance of factory that gives a document builder
-<span class="nc" id="L162">            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span>
+<span class="nc" id="L192">            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span>
 //an instance of builder to parse the specified xml file
-<span class="nc" id="L164">            dbf.setValidating(false);</span>
-<span class="nc" id="L165">            dbf.setFeature(&quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;, false);</span>
-<span class="nc" id="L166">            DocumentBuilder db = dbf.newDocumentBuilder();</span>
-<span class="nc" id="L167">            Document doc = db.parse(file);</span>
-<span class="nc" id="L168">            doc.getDocumentElement().normalize();</span>
-<span class="nc" id="L169">            System.out.println(&quot;Root element: &quot; + doc.getDocumentElement().getNodeName());</span>
-<span class="nc" id="L170">            NodeList nodeList = doc.getElementsByTagName(&quot;class&quot;);</span>
+<span class="nc" id="L194">            dbf.setValidating(false);</span>
+<span class="nc" id="L195">            dbf.setFeature(&quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;, false);</span>
+<span class="nc" id="L196">            DocumentBuilder db = dbf.newDocumentBuilder();</span>
+<span class="nc" id="L197">            Document doc = db.parse(file);</span>
+<span class="nc" id="L198">            doc.getDocumentElement().normalize();</span>
+<span class="nc" id="L199">            System.out.println(&quot;Root element: &quot; + doc.getDocumentElement().getNodeName());</span>
+<span class="nc" id="L200">            NodeList nodeList = doc.getElementsByTagName(&quot;class&quot;);</span>
 
 // nodeList is not iterable, so we are using for loop
-<span class="nc bnc" id="L173" title="All 2 branches missed.">            for (int itr = 0; itr &lt; nodeList.getLength(); itr++)</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">            for (int itr = 0; itr &lt; nodeList.getLength(); itr++)</span>
             {
-<span class="nc" id="L175">                Node node = nodeList.item(itr);</span>
-<span class="nc" id="L176">                System.out.println(&quot;\nNode Name :&quot; + node.getNodeName());</span>
+<span class="nc" id="L205">                Node node = nodeList.item(itr);</span>
+<span class="nc" id="L206">                System.out.println(&quot;\nNode Name :&quot; + node.getNodeName());</span>
 
-<span class="nc bnc" id="L178" title="All 2 branches missed.">                if (node.getNodeType() == Node.ELEMENT_NODE )</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                if (node.getNodeType() == Node.ELEMENT_NODE )</span>
                 {
-<span class="nc" id="L180">                    System.out.println(&quot;node attr name :&quot;+node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue());</span>
+<span class="nc" id="L210">                    System.out.println(&quot;node attr name :&quot;+node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue());</span>
 
-<span class="nc bnc" id="L182" title="All 2 branches missed.">                    for (int s =0 ; s &lt; returnobject.size() ; s++) {</span>
-<span class="nc" id="L183">                        System.out.println(&quot;class anme :&quot;+returnobject.get(s).toString());</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">                        if (node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue().equals(returnobject.get(s).toString())) {</span>
-<span class="nc" id="L185">                            Element eElement = (Element) node;</span>
-<span class="nc" id="L186">                            System.out.println(&quot;class found &quot;);</span>
-<span class="nc" id="L187">                            NodeList ChildNodes = eElement.getChildNodes();</span>
-<span class="nc" id="L188">                            ArrayList&lt;String&gt; opt = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L189">                            String currentFilename =&quot;&quot;;</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">                            for (int ii = 0; ii &lt; ChildNodes.getLength(); ii++) {</span>
-<span class="nc" id="L191">                                Node nodes = ChildNodes.item(ii);</span>
-<span class="nc bnc" id="L192" title="All 4 branches missed.">                                if (nodes.getNodeType() == nodes.ELEMENT_NODE &amp;&amp; Objects.equals(&quot;counter&quot;, nodes.getNodeName())) {</span>
-<span class="nc" id="L193">                                    System.out.println(&quot;inside counter   &quot;);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                    for (int s =0 ; s &lt; returnobject.size() ; s++) {</span>
+<span class="nc" id="L213">                        System.out.println(&quot;class anme :&quot;+returnobject.get(s).toString());</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                        if (node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue().equals(returnobject.get(s).toString())) {</span>
+<span class="nc" id="L215">                            Element eElement = (Element) node;</span>
+<span class="nc" id="L216">                            System.out.println(&quot;class found &quot;);</span>
+<span class="nc" id="L217">                            NodeList ChildNodes = eElement.getChildNodes();</span>
+<span class="nc" id="L218">                            HashMap&lt;String,String&gt; opt = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L219">                            String currentFilename =&quot;&quot;;</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                            for (int ii = 0; ii &lt; ChildNodes.getLength(); ii++) {</span>
+<span class="nc" id="L221">                                Node nodes = ChildNodes.item(ii);</span>
+<span class="nc bnc" id="L222" title="All 4 branches missed.">                                if (nodes.getNodeType() == nodes.ELEMENT_NODE &amp;&amp; Objects.equals(&quot;counter&quot;, nodes.getNodeName())) {</span>
+<span class="nc" id="L223">                                    System.out.println(&quot;inside counter   &quot;);</span>
 
-<span class="nc" id="L195">                                     keys = object.names ();</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">                                    for (int c = 0; c &lt; keys.length(); ++c) {</span>
-<span class="nc" id="L197">                                        System.out.println(&quot;insde keys  &quot;);</span>
-<span class="nc" id="L198">                                        String key = keys.getString(c); // Here's your key</span>
-<span class="nc" id="L199">                                        String value = object.getString(key); // Here's your value</span>
-<span class="nc" id="L200">                                        System.out.println(&quot;key&quot;+key);</span>
-<span class="nc" id="L201">                                        System.out.println(&quot;value&quot;+value);</span>
+<span class="nc" id="L225">                                     keys = object.names ();</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">                                    for (int c = 0; c &lt; keys.length(); ++c) {</span>
+<span class="nc" id="L227">                                        System.out.println(&quot;insde keys  &quot;);</span>
+<span class="nc" id="L228">                                        String key = keys.getString(c); // Here's your key</span>
+<span class="nc" id="L229">                                        String value = object.getString(key); // Here's your value</span>
+<span class="nc" id="L230">                                        System.out.println(&quot;key&quot;+key);</span>
+<span class="nc" id="L231">                                        System.out.println(&quot;value&quot;+value);</span>
 
-<span class="nc bnc" id="L203" title="All 4 branches missed.">                                        if (nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue().equals(key.toUpperCase()) &amp;&amp; value.equals(&quot;true&quot;)) {</span>
-<span class="nc" id="L204">                                          String fileName = node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue();</span>
-<span class="nc" id="L205">                                            System.out.println(&quot;file name &quot; +fileName);</span>
+<span class="nc bnc" id="L233" title="All 4 branches missed.">                                        if (nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue().equals(key.toUpperCase()) &amp;&amp; value.equals(&quot;true&quot;)) {</span>
+<span class="nc" id="L234">                                          String fileName = node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue();</span>
+<span class="nc" id="L235">                                            System.out.println(&quot;file name &quot; +fileName);</span>
 
 
-<span class="nc" id="L208">                                           String  testingOption = nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue();</span>
-<span class="nc" id="L209">                                            System.out.println(&quot;testing option &quot; + testingOption);</span>
-<span class="nc" id="L210">                                            String  coverd = nodes.getAttributes().getNamedItem(&quot;covered&quot;).getNodeValue();</span>
-<span class="nc" id="L211">                                            System.out.println(&quot;coverd for &quot;+ testingOption +&quot;  option is :&quot;+coverd);</span>
+<span class="nc" id="L238">                                           String  testingOption = nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue();</span>
+<span class="nc" id="L239">                                            System.out.println(&quot;testing option &quot; + testingOption);</span>
+<span class="nc" id="L240">                                            String  coverd = nodes.getAttributes().getNamedItem(&quot;covered&quot;).getNodeValue();</span>
+<span class="nc" id="L241">                                            System.out.println(&quot;coverd for &quot;+ testingOption +&quot;  option is :&quot;+coverd);</span>
                                            // opt.add(fileName);
-<span class="nc" id="L213">                                            currentFilename = fileName;</span>
-<span class="nc" id="L214">                                            opt.add(coverd);</span>
-                                        //  responsEntity re=  Config.getbean();
-                                          //re.setFileName(fileName);
-                                          //re.setTestingOption(testingOption);
-                                         //   doaObj.save(re);
+<span class="nc" id="L243">                                            currentFilename = fileName;</span>
+<span class="nc" id="L244">                                            opt.put(testingOption,coverd);</span>
+
 
 
                                         }
@@ -225,10 +252,13 @@ public   void runTest(){
 
                                 }
                             }
-<span class="nc" id="L228">                            System.out.println(&quot;data size&quot;+data.size());</span>
-<span class="nc" id="L229">                            data.put(currentFilename,opt);</span>
+<span class="nc" id="L255">                            System.out.println(&quot;data size&quot;+data.size());</span>
+<span class="nc" id="L256">                            data.put(currentFilename,opt);</span>
                             //data.put(node.getAttributes().getNamedItem(&quot;sourcefilename&quot;).getNodeValue(),nodes.getAttributes().getNamedItem(&quot;type&quot;).getNodeValue());
-<span class="nc" id="L231">                            System.out.println(&quot;data size afert &quot;+data.size());</span>
+<span class="nc" id="L258">                            System.out.println(&quot;data size afert &quot;+data.size());</span>
+
+
+
                         }
 
 
@@ -239,15 +269,25 @@ public   void runTest(){
 
                 }
             }
-<span class="nc" id="L242">System.out.println(&quot;data :&quot;);</span>
-<span class="nc" id="L243">System.out.println(data);</span>
+<span class="nc" id="L272">System.out.println(&quot;data :&quot;);</span>
+<span class="nc" id="L273">System.out.println(data);</span>
+<span class="nc" id="L274">            ObjectMapper mapper = new ObjectMapper();</span>
+
+            try {
+
+                // Writing to a file
+<span class="nc" id="L279">                mapper.writeValue(new File(&quot;/home/cheikh/IdeaProjects/testing/src/main/java/my/upm/emma/testing/package.json&quot;),  data);</span>
+
+<span class="nc" id="L281">            } catch (IOException e) {</span>
+<span class="nc" id="L282">                e.printStackTrace();</span>
+<span class="nc" id="L283">            }</span>
 
         }
-<span class="nc" id="L246">        catch (Exception e)</span>
+<span class="nc" id="L286">        catch (Exception e)</span>
         {
-<span class="nc" id="L248">            e.printStackTrace();</span>
+<span class="nc" id="L288">            e.printStackTrace();</span>
 
-<span class="nc" id="L250">        }</span>
-<span class="nc" id="L251">    }</span>
+<span class="nc" id="L290">        }</span>
+<span class="nc" id="L291">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>

@@ -6,8 +6,5 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class Config {
 
-    @Bean
-    public  static  responsEntity getbean(){
-        return  new responsEntity();
-    }
+
 }

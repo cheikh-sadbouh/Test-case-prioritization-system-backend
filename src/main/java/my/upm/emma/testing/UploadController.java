@@ -16,6 +16,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -33,17 +34,16 @@ import org.w3c.dom.Element;
 
 @Controller
 public class UploadController {
-
+    String testStatus = "inprocess";
     JSONObject object ;
     JSONArray keys ;
     @Autowired
     StorageService storageService;
-    @Resource
-    DaoInter doaObj;
+
     String [] Options = {"","","",""};
     List<String> files = new ArrayList<String>();
    List<String> returnobject = new ArrayList<>();
-   HashMap<String,ArrayList<String>>  data = new HashMap<>();
+   static HashMap<String,HashMap<String,String>>  data = new HashMap<>();
 
    String [] testingOptions;
     @RequestMapping(
@@ -67,6 +67,35 @@ public class UploadController {
             System.out.println(e.getStackTrace());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);
         }
+    }
+
+    @GetMapping(value = "/getstatus")
+    @CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")
+    @ResponseBody
+    public ResponseEntity<?> getTestStatus() throws  IOException {
+    ;
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        File file = new File("/home/cheikh/IdeaProjects/testing/src/main/java/my/upm/emma/testing/package.json");
+
+        HashMap<String,HashMap<String,String>> returneddata = objectMapper.readValue(file, HashMap.class);
+        System.out.println("data size"+data.size());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        for (Map.Entry<String, HashMap<String, String>> entry : returneddata.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+         return  new ResponseEntity<>(returneddata ,headers, HttpStatus.OK);
+
+
+    }
+
+    @GetMapping(value = "/test")
+    @CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")
+    @ResponseBody
+    public ResponseEntity<?> test() throws InterruptedException {
+
+        return ResponseEntity.status(HttpStatus.OK).body(data);
     }
 
     @PostMapping(value = "/getoption")
@@ -97,20 +126,19 @@ public class UploadController {
             }
 
 
-
-
-
-
-
-
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     // code goes here.
-                  runTest();
+                    runTest();
                     readXml();
                 }
             }).start();
+
+
+
+
+
 
             return ResponseEntity.status(HttpStatus.OK).body(message);
 
@@ -122,7 +150,7 @@ public class UploadController {
         }
     }
 
-public   void runTest(){
+public   String runTest(){
     ProcessBuilder processBuilder = new ProcessBuilder();
 
     processBuilder.command("bash", "-c", "ls /home/cheikh/IdeaProjects/testing | mvn clean test");
@@ -150,6 +178,7 @@ public   void runTest(){
     }
 
 
+    return "done";
 }
 
     public void readXml(){
@@ -185,7 +214,7 @@ public   void runTest(){
                             Element eElement = (Element) node;
                             System.out.println("class found ");
                             NodeList ChildNodes = eElement.getChildNodes();
-                            ArrayList<String> opt = new ArrayList<>();
+                            HashMap<String,String> opt = new HashMap<>();
                             String currentFilename ="";
                             for (int ii = 0; ii < ChildNodes.getLength(); ii++) {
                                 Node nodes = ChildNodes.item(ii);
@@ -211,11 +240,8 @@ public   void runTest(){
                                             System.out.println("coverd for "+ testingOption +"  option is :"+coverd);
                                            // opt.add(fileName);
                                             currentFilename = fileName;
-                                            opt.add(coverd);
-                                        //  responsEntity re=  Config.getbean();
-                                          //re.setFileName(fileName);
-                                          //re.setTestingOption(testingOption);
-                                         //   doaObj.save(re);
+                                            opt.put(testingOption,coverd);
+
 
 
                                         }
@@ -229,6 +255,9 @@ public   void runTest(){
                             data.put(currentFilename,opt);
                             //data.put(node.getAttributes().getNamedItem("sourcefilename").getNodeValue(),nodes.getAttributes().getNamedItem("type").getNodeValue());
                             System.out.println("data size afert "+data.size());
+
+
+
                         }
 
 
@@ -241,6 +270,16 @@ public   void runTest(){
             }
 System.out.println("data :");
 System.out.println(data);
+            ObjectMapper mapper = new ObjectMapper();
+
+            try {
+
+                // Writing to a file
+                mapper.writeValue(new File("/home/cheikh/IdeaProjects/testing/src/main/java/my/upm/emma/testing/package.json"),  data);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         }
         catch (Exception e)
