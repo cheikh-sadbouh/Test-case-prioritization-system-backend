@@ -153,7 +153,7 @@ public class UploadController {
 public   String runTest(){
     ProcessBuilder processBuilder = new ProcessBuilder();
 
-    processBuilder.command("bash", "-c", "ls /home/cheikh/IdeaProjects/testing | mvn clean test");
+    processBuilder.command("bash", "-c", "ls /home/moustpha/IdeaProjects/testing | mvn clean test");
 
 
     try {
